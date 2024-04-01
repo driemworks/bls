@@ -48,6 +48,11 @@ use digest::Digest;
 
 use core::iter::once;
 
+use etf_crypto_primitives::{
+    dpss::acss::HighThresholdACSS,
+    proofs::hashed_el_gamal_sigma::BatchPoK,
+};
+
 use crate::serialize::SerializableToBytes;
 use crate::{EngineBLS, Message, Signed};
 // //////////////// SECRETS //////////////// //
@@ -83,6 +88,15 @@ impl<E: EngineBLS> SecretKeyVT<E> {
         // s.normalize();   // VRFs are faster if we only normalize once, but no normalize method exists.
         // E::SignatureGroup::batch_normalization(&mut [&mut s]);
         Signature(s)
+    }
+
+    fn recover(&self, pok: BatchPoK<E::SignatureGroup>) -> Option<(E::Scalar, E::Scalar)> {
+        if let Some((s, s_prime)) = HighThresholdACSS::recover(
+            self.0, vec![pok],
+        ).ok() {
+            return Some((s, s_prime));
+        }
+        None
     }
 
     /// Convert into a `SecretKey` that supports side channel protections,

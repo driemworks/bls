@@ -54,6 +54,7 @@ pub trait DoublePublicKeyScheme<E: EngineBLS> {
     /// Return a double public object containing public keys both in G1 and G2
     fn into_double_public_key(&self) -> DoublePublicKey<E>;
     fn sign(&mut self, message: &Message) -> DoubleSignature<E>;
+    fn recover(&self, pok_bytes: &[u8]) -> Vec<u8>;
 }
 
 impl<E: EngineBLS> DoublePublicKeyScheme<E> for SecretKeyVT<E> {
@@ -76,6 +77,10 @@ impl<E: EngineBLS> DoublePublicKeyScheme<E> for SecretKeyVT<E> {
             ChaumPedersenSigner::<E, Sha256>::generate_cp_signature(self, &message);
         DoubleSignature(chaum_pedersen_signature.0 .0, chaum_pedersen_signature.1)
     }
+
+    fn recover(&self, pok_bytes: &[u8]) -> Vec<u8> {
+        Vec::new()
+    }
 }
 
 impl<E: EngineBLS> DoublePublicKeyScheme<E> for KeypairVT<E> {
@@ -91,6 +96,10 @@ impl<E: EngineBLS> DoublePublicKeyScheme<E> for KeypairVT<E> {
     fn sign(&mut self, message: &Message) -> DoubleSignature<E> {
         DoublePublicKeyScheme::sign(&mut self.secret, message)
     }
+
+    fn recover(&self, pok_bytes: &[u8]) -> Vec<u8> {
+        Vec::new()
+    }
 }
 
 impl<E: EngineBLS> DoublePublicKeyScheme<E> for Keypair<E> {
@@ -105,6 +114,10 @@ impl<E: EngineBLS> DoublePublicKeyScheme<E> for Keypair<E> {
     /// Sign a message using a Seedabale RNG created from a seed derived from the message and key
     fn sign(&mut self, message: &Message) -> DoubleSignature<E> {
         DoublePublicKeyScheme::sign(&mut self.into_vartime(), message)
+    }
+
+    fn recover(&self, pok_bytes: &[u8]) -> Vec<u8> {
+        Vec::new()
     }
 }
 
