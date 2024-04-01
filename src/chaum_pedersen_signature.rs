@@ -21,7 +21,6 @@ pub trait ChaumPedersenSigner<E: EngineBLS, H: DynDigest + Default + Clone> {
     /// to produce a schnoor signature of the message using
     /// the secret key which it claim to possess.
     fn generate_cp_signature(&mut self, message: &Message) -> ChaumPedersenSignature<E>;
-    fn generate_cp_signature_prehashed(&mut self, message: &[u8;32]) -> ChaumPedersenSignature<E>;
 
     fn generate_witness_scaler(
         &self,
