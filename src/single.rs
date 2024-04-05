@@ -90,14 +90,15 @@ impl<E: EngineBLS> SecretKeyVT<E> {
         Signature(s)
     }
 
-    fn recover(&self, pok: BatchPoK<E::SignatureGroup>) -> Option<(E::Scalar, E::Scalar)> {
-        if let Some((s, s_prime)) = HighThresholdACSS::recover(
-            self.0, vec![pok],
-        ).ok() {
-            return Some((s, s_prime));
-        }
-        None
-    }
+    // /// run the ACSS recover protocol
+    // fn recover(&self, pok: BatchPoK<E::SignatureGroup>) -> Option<(E::Scalar, E::Scalar)> {
+    //     if let Some((s, s_prime)) = HighThresholdACSS::recover(
+    //         self.0, vec![pok],
+    //     ).ok() {
+    //         return Some((s, s_prime));
+    //     }
+    //     None
+    // }
 
     /// Convert into a `SecretKey` that supports side channel protections,
     /// but does not itself resplit the key.
@@ -124,6 +125,22 @@ impl<E: EngineBLS> SecretKeyVT<E> {
         // let mut g = <E::PublicKeyGroup as CurveGroup>::one();
         // g *= self.0;
         // PublicKey(p)
+    }
+}
+
+impl<E: EngineBLS> SecretKeyVT<E> {
+    pub fn recover(&self, pok: BatchPoK<E::SignatureGroup>) -> Option<E::Scalar> {
+        // SecretVT -> To Scalar
+        let secret = self.0.clone();
+        // TODO: omitting blinding secret for now
+        if let Some((s, _)) = HighThresholdACSS::recover(
+            secret, vec![pok],
+        ).ok() {
+            // let recovered_secret = SecretKeyVT(s);
+            // return Some(KeypairVT { secret: recovered_secret, public });
+            return Some(s);
+        }
+        None
     }
 }
 
@@ -561,6 +578,18 @@ impl<E: EngineBLS> KeypairVT<E> {
             signature,
         }
     }
+
+    /// run the ACSS recover protocol
+    pub fn recover(&self, pok: BatchPoK<E::SignatureGroup>) -> Option<E::Scalar> {
+        let secret = self.secret.0;
+        // TODO: omitting blinding secret for now
+        if let Some((s, _)) = HighThresholdACSS::recover(
+            secret, vec![pok],
+        ).ok() {
+            return Some(s);
+        }
+        None
+    }
 }
 
 /// BLS Keypair
@@ -648,6 +677,10 @@ impl<E: EngineBLS> Keypair<E> {
             publickey: self.public,
             signature,
         }
+    }
+
+    fn recover(&self, pok: BatchPoK<E::SignatureGroup>) -> Option<E::Scalar> {
+        self.into_vartime().recover(pok)
     }
 }
 
@@ -1005,5 +1038,18 @@ mod tests {
         test_deserialize_random_value_as_secret_key_fails::<Bls12_377, ark_bls12_377::Config>(
             random_seed.as_slice(),
         );
+    }
+
+    #[test]
+    fn test_acss_recovery_works() {
+        let mut keypair =
+            Keypair::<UsualBLS<Bls12_377, ark_bls12_377::Config>>::generate(thread_rng());
+
+        let s = ark_bls12_377::Fr::rand(&mut test_rng());
+        let s_prime = ark_bls12_377::Fr::rand(&mut test_rng());
+
+        // let good_sig0 = keypair.signed_message(&Message::new(b"ctx", b"test message"));
+
+
     }
 }

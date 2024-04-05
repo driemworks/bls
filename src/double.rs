@@ -19,6 +19,8 @@ use ark_serialize::{CanonicalDeserialize, CanonicalSerialize};
 
 use sha2::Sha256;
 
+use etf_crypto_primitives::proofs::hashed_el_gamal_sigma::BatchPoK;
+
 use crate::broken_derives;
 use crate::chaum_pedersen_signature::{ChaumPedersenSigner, ChaumPedersenVerifier};
 use crate::schnorr_pop::SchnorrProof;
@@ -54,7 +56,7 @@ pub trait DoublePublicKeyScheme<E: EngineBLS> {
     /// Return a double public object containing public keys both in G1 and G2
     fn into_double_public_key(&self) -> DoublePublicKey<E>;
     fn sign(&mut self, message: &Message) -> DoubleSignature<E>;
-    fn recover(&self, pok_bytes: &[u8]) -> Vec<u8>;
+    fn acss_recover(&self, pok: BatchPoK<E::SignatureGroup>) -> Option<E::Scalar>;
 }
 
 impl<E: EngineBLS> DoublePublicKeyScheme<E> for SecretKeyVT<E> {
@@ -78,8 +80,8 @@ impl<E: EngineBLS> DoublePublicKeyScheme<E> for SecretKeyVT<E> {
         DoubleSignature(chaum_pedersen_signature.0 .0, chaum_pedersen_signature.1)
     }
 
-    fn recover(&self, pok_bytes: &[u8]) -> Vec<u8> {
-        Vec::new()
+    fn acss_recover(&self, pok: BatchPoK<E::SignatureGroup>) -> Option<E::Scalar> {
+        self.recover(pok)
     }
 }
 
@@ -97,8 +99,9 @@ impl<E: EngineBLS> DoublePublicKeyScheme<E> for KeypairVT<E> {
         DoublePublicKeyScheme::sign(&mut self.secret, message)
     }
 
-    fn recover(&self, pok_bytes: &[u8]) -> Vec<u8> {
-        Vec::new()
+    fn acss_recover(&self, pok: BatchPoK<E::SignatureGroup>) -> Option<E::Scalar> {
+        self.secret.recover(pok)
+        // None
     }
 }
 
@@ -116,8 +119,8 @@ impl<E: EngineBLS> DoublePublicKeyScheme<E> for Keypair<E> {
         DoublePublicKeyScheme::sign(&mut self.into_vartime(), message)
     }
 
-    fn recover(&self, pok_bytes: &[u8]) -> Vec<u8> {
-        Vec::new()
+    fn acss_recover(&self, pok: BatchPoK<E::SignatureGroup>) -> Option<E::Scalar> {
+        self.into_vartime().recover(pok)
     }
 }
 
