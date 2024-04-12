@@ -31,7 +31,7 @@ serde = { version = "1.0", default-features = false, optional = true }
 thiserror = { version = "1.0", default-features = false }
 constcat = "0.3.0"
 
-etf-crypto-primitives = { git = "https://github.com/ideal-lab5/etf-sdk.git", branch = "dpss-noscale", default-features = false}
+etf-crypto-primitives = { git = "https://github.com/ideal-lab5/etf-sdk.git", branch = "w3fbls-migration", default-features = false}
 
 [dev-dependencies]
 hex-literal = "0.3.4"

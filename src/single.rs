@@ -90,16 +90,6 @@ impl<E: EngineBLS> SecretKeyVT<E> {
         Signature(s)
     }
 
-    // /// run the ACSS recover protocol
-    // fn recover(&self, pok: BatchPoK<E::SignatureGroup>) -> Option<(E::Scalar, E::Scalar)> {
-    //     if let Some((s, s_prime)) = HighThresholdACSS::recover(
-    //         self.0, vec![pok],
-    //     ).ok() {
-    //         return Some((s, s_prime));
-    //     }
-    //     None
-    // }
-
     /// Convert into a `SecretKey` that supports side channel protections,
     /// but does not itself resplit the key.
     pub fn into_split_dirty(&self) -> SecretKey<E> {
@@ -1040,16 +1030,16 @@ mod tests {
         );
     }
 
-    #[test]
-    fn test_acss_recovery_works() {
-        let mut keypair =
-            Keypair::<UsualBLS<Bls12_377, ark_bls12_377::Config>>::generate(thread_rng());
+    // #[test]
+    // fn test_acss_recovery_works() {
+    //     let mut keypair =
+    //         Keypair::<UsualBLS<Bls12_377, ark_bls12_377::Config>>::generate(thread_rng());
 
-        let s = ark_bls12_377::Fr::rand(&mut test_rng());
-        let s_prime = ark_bls12_377::Fr::rand(&mut test_rng());
+    //     let s = ark_bls12_377::Fr::rand(&mut test_rng());
+    //     let s_prime = ark_bls12_377::Fr::rand(&mut test_rng());
 
-        // let good_sig0 = keypair.signed_message(&Message::new(b"ctx", b"test message"));
+    //     // let good_sig0 = keypair.signed_message(&Message::new(b"ctx", b"test message"));
 
 
-    }
+    // }
 }
